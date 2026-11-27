@@ -10,9 +10,7 @@ import {
 import { DynamoDBStreamEvent, DynamoDBStreamHandler } from 'aws-lambda';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
-import { v4 as uuidv4 } from 'uuid';
 import { randomInt } from 'crypto';
-import { normalize } from 'path';
 
 const sqsClient = new SQSClient({ region: 'eu-central-1' });
 
