@@ -1,11 +1,4 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import {
-    AttributeValue,
-    DynamoDBClient,
-    GetItemCommand,
-    QueryCommand,
-    UpdateItemCommand,
-} from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand, DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { generateInviteToken, marketplaceURL } from '../../utils/index';
 import {
