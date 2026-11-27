@@ -1,0 +1,118 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  UsersCognitoUserPoolArn:
+    Type: String
+    Default: "arn:aws:cognito-idp:eu-west-2:056538633912:userpool/eu-west-2_d8cTgSo6W"
+    Description: "The ARN of the cloudpactai users cognito User Pool to use for API authentication."
+
+Description: >
+  Cusecho-DBStreams-Lambdas
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 20
+
+    Tracing: Active
+
+    LoggingConfig:
+      LogFormat: JSON
+  Api:
+    TracingEnabled: true
+    Cors:
+      AllowMethods: "'OPTIONS,POST,GET,DELETE,PUT'"
+      AllowHeaders: "'*'"
+      AllowOrigin: "'*'"
+    Auth:
+      DefaultAuthorizer: CognitoAuth
+      # Authorizers:
+      #   CognitoAuth:
+      #     UserPoolArn: !Ref UsersCognitoUserPoolArn
+
+Resources:
+
+  CusechoSwapSendAcceptanceTokenViaEmailToGuestUsersStreamsHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      FunctionName: CusechoSwapSendAcceptanceTokenViaEmailToGuestUsersStreamsHandler
+      Handler: handlers/stream_handlers/app.sendEmailToGuestUser
+      Runtime: nodejs20.x
+      Events:
+        CusechoSwapSendAcceptanceTokenViaEmailToGuestUsersStreamsHandler:
+          Type: DynamoDB
+          Properties:
+            Stream: "arn:aws:dynamodb:eu-west-2:056538633912:table/Cusecho_SwapRequests/stream/2025-03-05T12:50:46.483"
+            StartingPosition: TRIM_HORIZON
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - AmazonSESFullAccess
+        - AmazonS3ReadOnlyAccess
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - handlers/stream_handlers/app.ts
+
+  StorefrontUnlockPaymentToQueueHandlerProdV2:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      FunctionName: StorefrontUnlockPaymentToQueueHandlerV2
+      Handler: handlers/stream_handlers/app.storefrontUnlockPaymentToQueue
+      Runtime: nodejs20.x
+      Events:
+        CusechoLockandUnlockTransactionsHandlerProdV2:
+          Type: DynamoDB
+          Properties:
+            Stream: "arn:aws:dynamodb:eu-west-2:056538633912:table/Cusecho_SwapRequests/stream/2025-03-05T12:50:46.483"
+            StartingPosition: TRIM_HORIZON
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - AmazonSQSFullAccess
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - handlers/stream_handlers/app.ts
+
+# Outputs:
+#     CusechoStreamsLambdaApi:
+#         Description: API Gateway endpoint URL for Prod stage for cloudpactAI Cusecho-DBStreams-Lambdas
+#         Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/'
+
+#   ApplicationResourceGroup:
+#     Type: AWS::ResourceGroups::Group
+#     Properties:
+#       Name:
+#         Fn::Sub: ApplicationInsights-SAM-${AWS::StackName}
+#       ResourceQuery:
+#         Type: CLOUDFORMATION_STACK_1_0
+#   ApplicationInsightsMonitoring:
+#     Type: AWS::ApplicationInsights::Application
+#     Properties:
+#       ResourceGroupName:
+#         Ref: ApplicationResourceGroup
+#       AutoConfigurationEnabled: 'true'
+# Outputs:
+#   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+#   # Find out more about other implicit resources you can reference within SAM
+#   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+#   HelloWorldApi:
+#     Description: API Gateway endpoint URL for Prod stage for Hello World 
+#       function
+#     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+#   HelloWorldFunction:
+#     Description: Hello World Lambda Function ARN
+#     Value: !GetAtt HelloWorldFunction.Arn
+#   HelloWorldFunctionIamRole:
+#     Description: Implicit IAM Role created for Hello World function
+#     Value: !GetAtt HelloWorldFunctionRole.Arn

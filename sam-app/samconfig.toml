@@ -1,0 +1,12 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "cusecho-DBlambda-streams"
+
+s3_bucket = "cusecho-lambda-streams"
+s3_prefix = "cusecho-lambda-streams"
+region = "eu-west-2"
+profile = "kingsley-arinzechukwu-main"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "UsersCognitoUserPoolArn=\"arn:aws:cognito-idp:eu-west-2:056538633912:userpool/eu-west-2_d8cTgSo6W\""
+image_repositories = []
